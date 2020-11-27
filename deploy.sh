@@ -3,6 +3,13 @@
 NAME=$(basename "$0")
 HERE=$(dirname $(realpath "$0"))
 
+if [[ $EUID -ne 0 ]]; then
+    echo "${NAME}: I should be run as root, trying sudo..." >&2
+    set -e
+    sudo $0 $*
+    exit $?
+fi
+
 function add_cron_job
 {
     set -e
