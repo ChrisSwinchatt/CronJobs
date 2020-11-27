@@ -1,0 +1,7 @@
+#!/bin/bash
+
+HERE=$(dirname $(realpath "$0"))
+NOLOG=1
+. "${HERE}/common"
+
+"${HERE}/show-changes.sh" >/etc/motd 2>&1
