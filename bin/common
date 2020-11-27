@@ -1,0 +1,11 @@
+#!/bin/bash
+
+TODAY=$(date '+%Y-%m-%d')
+LOG_DIR="/var/logs/cronjobs/${TODAY}"
+mkdir -p "${LOG_DIR}"
+
+NAME=$(basename "$0")
+LOG_FILE="${LOG_DIR}/${NAME%.*}.log"
+
+touch "${LOG_FILE}"
+chmod 0666 "${LOG_FILE}"
