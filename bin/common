@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TODAY=$(date '+%Y-%m-%d')
-LOG_DIR="/var/logs/cronjobs/${TODAY}"
+LOG_DIR="/var/log/cronjobs/${TODAY}"
 mkdir -p "${LOG_DIR}"
 
 NAME=$(basename "$0")
