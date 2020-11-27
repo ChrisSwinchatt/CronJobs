@@ -6,6 +6,7 @@ if [[ $EUID -eq 0 ]]; then
 fi
 
 PREFIX="${HOME}/.cronjobs"
-git clone -o "${PREFIX}" "https://github.com/ChrisSwinchatt/CronJobs"
+git clone "https://github.com/ChrisSwinchatt/CronJobs" "${PREFIX}"
 find "${PREFIX}" -name '*.sh' -exec chmod +x {} \;
 "${PREFIX}/deploy.sh"
+
