@@ -14,12 +14,12 @@ function colorise
 
 function latest
 {
-    find "${LOG_BASE}" -mindepth 2 -type f -iname "$1" | sort | tail -n 1
+    find "${LOG_BASE}" -mindepth 2 -type f -iname "*$1*" | sort | tail -n 1
 }
 
 function penulti
 {
-    find "${LOG_BASE}" -mindepth 2 -type f -iname "$1" | sort | tail -n 2 | head -n 1
+    find "${LOG_BASE}" -mindepth 2 -type f -iname "*$1*" | sort | tail -n 2 | head -n 1
 }
 
 function show_changes
