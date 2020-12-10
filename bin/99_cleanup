@@ -1,0 +1,19 @@
+#!/bin/bash
+
+DIR_LIMIT=7
+
+HERE=$(dirname $(realpath "$0"))
+. "${HERE}/common"
+
+echo -n >"${LOG_FILE}"
+
+num_dirs=$(ls -1 "${LOG_BASE}" | wc -l)
+if [[ $num_dirs -gt $DIR_LIMIT ]]; then
+    num_rm=$[num_dirs - $DIR_LIMIT]
+    echo "${NAME}: Removing ${num_rm} directories:" >>"${LOG_FILE}"
+    ls -1 "${LOG_BASE}" | sort -n | head -n ${num_rm} | while read dir; do
+        echo -n " * ${dir}..." >>"${LOG_FILE}"
+        rm -rf "${LOG_BASE}/${dir}"
+        echo " deleted" >>"${LOG_FILE}"
+    done
+fi
