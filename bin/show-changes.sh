@@ -31,26 +31,17 @@ function show_changes
     echo "========================================[ ${what} ]========================================" >&2
     if [[ -f "${prev}" ]] && [[ -f "${curr}" ]] && [[ "${prev}" != "${curr}" ]]; then
         # Show lines in curr not in prev
-        echo "*** New ${noun} in ${what}.log" | colorise "1;31" >&2
+        echo "*** New ${noun} in ${what}.log"
         if [[ $(diff "${curr}" "${prev}" | grep '>') = "" ]]; then
             echo "None" >&2
         else
-            diff "${curr}" "${prev}" | grep '>'
-        fi
-        
-        # Show lines in prev not in curr
-        echo "*** ${noun} removed from ${what}.log:" | colorise "1;32" >&2
-        if [[ $(diff "${prev}" "${curr}" | grep '>') = "" ]]; then
-            echo "None" >&2
-        else
-            diff "${prev}" "${curr}" | grep '>'
+            diff "${curr}" "${prev}" | grep '>' | colorise "1;31"
         fi
     elif [[ -f "${curr}" ]]; then
-        echo "*** New ${noun} in ${what}.log:" | colorise "1;31" >&2
-        while read line; do echo "> $line"; done <"${curr}"
-    elif [[ -f "${prev}" ]]; then
-        echo "*** ${noun} removed from ${what}.log:" | colorise "1;32" >&2
-        while read line; do echo "> $line"; done <"${curr}"
+        echo "*** New ${noun} in ${what}.log:"
+        local count=0
+        while read line; do echo "> $line"; count=$[count + 1]; done <"${curr}" | colorise "1;31"
+        [[ $count -eq 0 ]] && echo "None" >&2
     else
         echo "*** ${what} hasn't run yet" | colorise "1;33" >&2
     fi
