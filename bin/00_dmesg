@@ -1,0 +1,17 @@
+#!/bin/bash
+
+HERE=$(dirname $(realpath "$0"))
+PAT_FILE="${HERE}/dmesg.patterns"
+
+. "${HERE}/common"
+
+patterns=
+while read line; do
+    if [[ "${patterns}" = "" ]]; then
+        patterns="${line}"
+    else
+        patterns="${patterns}|${line}"
+    fi
+done <"${PAT_FILE}"
+
+dmesg | grep -iE "${patterns}" >>"${LOG_FILE}"
