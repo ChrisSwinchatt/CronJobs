@@ -1,0 +1,49 @@
+#!/bin/bash
+
+HERE=$(dirname $(realpath "$0"))
+SCHED_FILE="${HERE}/ethminer.schedule"
+ARGS_FILE="${HERE}/ethminer.args"
+
+. "${HERE}/common"
+
+ETH_LOG_FILE="$(basename "${LOG_FILE}")/00_ethminer.ethminer.log"
+
+if [[ ! -x $(which ethminer) ]]; then
+    log "ethminer is not installed"
+    exit 0
+fi
+
+args=$([[ -f "${ARGS_FILE}" ]] && cat "${ARGS_FILE}")
+
+real_hour=$(date '+%H' | sed 's/^0\([0-9]\)/\1/')
+while read line; do
+    sched_hour=$(echo "$line" | tr ' ' '\n' | head -n 1)
+    if [[ ${sched_hour} -eq ${real_hour} ]]; then
+        sched_switch=$(echo "${line}" | tr ' ' '\n' | tail -n 1)
+        log "Switching ${sched_switch} because hour is ${sched_hour}"
+        case "${sched_switch}" in
+            on)
+                if pgrep "ethminer" >/dev/null; then
+                    log "Ethminer is not running - running command \"ethminer ${args}\""
+                    nohup $(which ethminer) ${args} \& >>"${ETH_LOG_FILE}"
+                else
+                    log "Ethminer is already running - nothing to do"
+                fi
+                ;;
+            off)
+                if pgrep "ethminer" >/dev/null; then
+                    log "Ethminer is not running - nothing to do"
+                else
+                    log "Ethminer is running - killing ethminer"
+                    killall ethminer
+                    sleep 3
+                    killall -9 ethminer 2>/dev/null
+                fi
+                ;;
+            *)
+                log "Bad configuration: $line"
+                ;;
+        esac
+        break
+    fi
+done <"${SCHED_FILE}"

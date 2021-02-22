@@ -12,3 +12,7 @@ if [[ -z $NOLOG ]]; then
     touch "${LOG_FILE}"
     chmod 0666 "${LOG_FILE}"
 fi
+
+function log {
+    echo "${NAME}: $*" | tee -a "${LOG_FILE}"
+}
