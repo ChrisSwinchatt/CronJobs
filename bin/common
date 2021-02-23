@@ -14,5 +14,5 @@ if [[ -z $NOLOG ]]; then
 fi
 
 function log {
-    echo "${NAME}: $*" | tee -a "${LOG_FILE}"
+    echo "[$(date '+%H:%M:%S')] ${NAME}: $*" | tee -a "${LOG_FILE}"
 }
