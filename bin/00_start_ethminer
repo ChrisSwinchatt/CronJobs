@@ -1,0 +1,45 @@
+#!/bin/bash
+
+HERE=$(dirname $(realpath "$0"))
+SCHED_FILE="${HERE}/ethminer.schedule"
+ARGS_FILE="${HERE}/ethminer.args"
+
+. "${HERE}/common"
+
+ETH_LOG_FILE="${LOG_DIR}/00_ethminer.ethminer.log"
+
+if [[ ! -x $(which ethminer) ]]; then
+    log "ethminer is not installed"
+    exit 0
+fi
+
+args=$([[ -f "${ARGS_FILE}" ]] && cat "${ARGS_FILE}")
+real_hour=$(date '+%H' | sed 's/^0\([0-9]\)/\1/')
+
+while read line; do
+    sched_hour=$(echo "$line" | tr ' ' '\n' | head -n 1)
+    if [[ ${sched_hour} -eq ${real_hour} ]]; then
+        sched_switch=$(echo "${line}" | tr ' ' '\n' | tail -n 1)
+        if [[ "${sched_switch}" = "on" ]]; then
+            log "Switching ON because hour is ${sched_hour}"
+            if pgrep "ethminer" >/dev/null; then
+                log "Ethminer is not running - running command \"ethminer ${args}\""
+                # Kill steam if it's running to free video memory for ethminer
+                if pgrep "steam" >/dev/null; then
+                    log "Killing steam to free video memory"
+                    killall steam >/dev/null || ( sleep 3 ; killall steam -9 >/dev/null )
+                fi
+
+                nohup $(which ethminer) ${args} >>"${ETH_LOG_FILE}" &
+                sleep 1
+                if ! pgrep "ethminer" >/dev/null; then
+                    log "ERR: Ethminer didn't start"
+                    exit 1
+                fi
+            else
+                log "Ethminer is already running - nothing to do"
+            fi
+        fi
+        break
+    fi
+done <"${SCHED_FILE}"
