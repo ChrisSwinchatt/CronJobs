@@ -13,6 +13,10 @@ if [[ ! -x $(which ethminer) ]]; then
     exit 0
 fi
 
+if pgrep "ethminer" >/dev/null; then
+    log "Ethminer is already running - nothing to do"
+fi
+
 args=$([[ -f "${ARGS_FILE}" ]] && cat "${ARGS_FILE}")
 real_hour=$(date '+%H' | sed 's/^0\([0-9]\)/\1/')
 while read line; do
@@ -23,28 +27,23 @@ while read line; do
 
     sched_switch=$(echo "${line}" | tr ' ' '\n' | tail -n 1)
     if [[ "${sched_switch}" = "on" ]]; then
-        log "Switching ON because hour is ${sched_hour}"
-        if pgrep "ethminer" >/dev/null; then
-            log "\`- Ethminer is not running - starting ethminer"
+        log "Starting Ethminer because hour is ${sched_hour}"
 
-            # Kill steam if it's running to free video memory for ethminer
-            if pgrep "steam" >/dev/null; then
-                log "\`-- Killing steam to free video memory"
-                killall steam >/dev/null || ( sleep 3 ; killall steam -9 >/dev/null )
-            fi
+        # Kill steam if it's running to free video memory for ethminer
+        if pgrep "steam" >/dev/null; then
+            log "\`- Killing steam to free video memory"
+            killall steam >/dev/null || ( sleep 3 ; killall steam -9 >/dev/null )
+        fi
 
-            # Start ethminer & verify it is running.
-            ( nohup $(which ethminer) ${args} 2>&1 | tee -a "${ETH_LOG_FILE}" ) &
-            sleep 1
-            disown %1
-            if ! pgrep "ethminer" >/dev/null; then
-                log "ERR: Ethminer failed to start"
-                exit 1
-            else
-                log "\`- Ethminer started successfully"
-            fi
+        # Start ethminer & verify it is running.
+        ( nohup $(which ethminer) ${args} 2>&1 | tee -a "${ETH_LOG_FILE}" ) &
+        sleep 1
+        disown %1
+        if ! pgrep "ethminer" >/dev/null; then
+            log "\`- ERR: Ethminer failed to start"
+            exit 1
         else
-            log "\`- Ethminer is already running - nothing to do"
+            log "\`- Ethminer started successfully"
         fi
     fi
     break

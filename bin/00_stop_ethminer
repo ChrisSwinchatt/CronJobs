@@ -8,6 +8,11 @@ if [[ ! -x $(which ethminer) ]]; then
     exit 0
 fi
 
+
+if ! pgrep "ethminer" >/dev/null; then
+    log "Ethminer is not running - nothing to do"
+fi
+
 real_hour=$(date '+%H' | sed 's/^0\([0-9]\)/\1/')
 while read line; do
     sched_hour=$(echo "$line" | tr ' ' '\n' | head -n 1)
@@ -16,13 +21,8 @@ while read line; do
     fi
     sched_switch=$(echo "${line}" | tr ' ' '\n' | tail -n 1)
     if [[ "${sched_switch}" = "off" ]]; then
-        log "Switching OFF because hour is ${sched_hour}"
-        if pgrep "ethminer" >/dev/null; then
-            log "\`- Ethminer is not running - nothing to do"
-        else
-            log "\`- Ethminer is running - killing ethminer"
-            killall ethminer || ( sleep 3 ; killall -9 ethminer 2>/dev/null )
-        fi
+        log "Stopping Ethminer because hour is ${sched_hour}"
+        killall ethminer || ( sleep 3 ; killall -9 ethminer 2>/dev/null )
     fi
     break
 done <"${SCHED_FILE}"
